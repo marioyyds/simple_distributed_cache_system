@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service cache_server_service{
+    rpc search_kv(request) returns (response){}
+}
+
+message request{
+    string key = 1;
+}
+
+message response{
+    string value = 1;
+}
