@@ -1,0 +1,49 @@
+version: "3"
+services:
+  cache_server1:
+    build: .
+    ports:
+      - 9527:9527
+      - 50051:50051
+    deploy:
+      restart_policy:
+        condition: on-failure
+    networks:
+      server:
+          ipv4_address: 172.24.0.2
+    command: ["python3", "cache_server_1.py"]
+
+  cache_server2:
+    build: .
+    ports:
+      - 9528:9528
+      - 50052:50052
+    deploy:
+      restart_policy:
+        condition: on-failure
+    networks:
+      server:
+          ipv4_address: 172.24.0.3
+    command: ["python3", "cache_server_2.py"]
+ 
+  cache_server3:
+    build: .
+    ports:
+      - 9529:9529
+      - 50053:50053
+    networks:
+      server:
+          ipv4_address: 172.24.0.4
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: ["python3", "cache_server_3.py"]
+
+networks:
+  server:
+    driver:
+      bridge
+    ipam:
+      config:
+        - subnet: 172.24.0.0/24
+          gateway: 172.24.0.1

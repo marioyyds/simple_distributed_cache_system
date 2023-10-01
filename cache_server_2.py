@@ -28,7 +28,7 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
         temp_dict = {}
 
         try:
-            with grpc.insecure_channel("localhost:50051") as channel:
+            with grpc.insecure_channel("172.24.0.2:50051") as channel:
                 stub = SDCS_pb2_grpc.sdcsStub(channel)
                 response = stub.search_kv(SDCS_pb2.request(key=key))
             
@@ -39,7 +39,7 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
             pass
 
         try:
-            with grpc.insecure_channel("localhost:50053") as channel:
+            with grpc.insecure_channel("172.24.0.4:50053") as channel:
                 stub = SDCS_pb2_grpc.sdcsStub(channel)
                 response = stub.search_kv(SDCS_pb2.request(key=key))
 
@@ -61,7 +61,7 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
         port = "50052"
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         SDCS_pb2_grpc.add_sdcsServicer_to_server(self, server)
-        server.add_insecure_port("[::]:" + port)
+        server.add_insecure_port("172.24.0.3" + port)
         server.start()
         print("Server started, listening on " + port)
         server.wait_for_termination()
@@ -132,7 +132,7 @@ class HttpHandler(BaseHTTPRequestHandler):
         pass
 
 def run_httpd_server():
-    httpd = HTTPServer(('127.0.0.1', 9528), HttpHandler)
+    httpd = HTTPServer(('0.0.0.0', 9528), HttpHandler)
     httpd.serve_forever()
 
 def run_gRPC_server():
