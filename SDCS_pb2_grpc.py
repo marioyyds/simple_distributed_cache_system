@@ -2,10 +2,10 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import cache_server_pb2 as cache__server__pb2
+import SDCS_pb2 as SDCS__pb2
 
 
-class cache_server_serviceStub(object):
+class sdcsStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -15,13 +15,13 @@ class cache_server_serviceStub(object):
             channel: A grpc.Channel.
         """
         self.search_kv = channel.unary_unary(
-                '/cache_server_service/search_kv',
-                request_serializer=cache__server__pb2.request.SerializeToString,
-                response_deserializer=cache__server__pb2.response.FromString,
+                '/sdcs/search_kv',
+                request_serializer=SDCS__pb2.request.SerializeToString,
+                response_deserializer=SDCS__pb2.response.FromString,
                 )
 
 
-class cache_server_serviceServicer(object):
+class sdcsServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def search_kv(self, request, context):
@@ -31,21 +31,21 @@ class cache_server_serviceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_cache_server_serviceServicer_to_server(servicer, server):
+def add_sdcsServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'search_kv': grpc.unary_unary_rpc_method_handler(
                     servicer.search_kv,
-                    request_deserializer=cache__server__pb2.request.FromString,
-                    response_serializer=cache__server__pb2.response.SerializeToString,
+                    request_deserializer=SDCS__pb2.request.FromString,
+                    response_serializer=SDCS__pb2.response.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'cache_server_service', rpc_method_handlers)
+            'sdcs', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class cache_server_service(object):
+class sdcs(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -59,8 +59,8 @@ class cache_server_service(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/cache_server_service/search_kv',
-            cache__server__pb2.request.SerializeToString,
-            cache__server__pb2.response.FromString,
+        return grpc.experimental.unary_unary(request, target, '/sdcs/search_kv',
+            SDCS__pb2.request.SerializeToString,
+            SDCS__pb2.response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

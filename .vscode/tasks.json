@@ -6,7 +6,7 @@
         {
             "label": "compile proto file",
             "type": "shell",
-            "command": "python -m grpc_tools.protoc -Iprotos --python_out=. --pyi_out=. --grpc_python_out=. ./protos/cache_server.proto"
+            "command": "python -m grpc_tools.protoc -Iprotos --python_out=. --pyi_out=. --grpc_python_out=. ./protos/SDCS.proto"
         }
     ]
 }

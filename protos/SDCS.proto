@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-service cache_server_service{
+service sdcs{
     rpc search_kv(request) returns (response){}
 }
 
