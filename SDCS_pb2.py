@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nSDCS.proto\"\x16\n\x07request\x12\x0b\n\x03key\x18\x01 \x01(\t\"\x19\n\x08response\x12\r\n\x05value\x18\x01 \x01(\t2*\n\x04sdcs\x12\"\n\tsearch_kv\x12\x08.request\x1a\t.response\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nSDCS.proto\"\x16\n\x07request\x12\x0b\n\x03key\x18\x01 \x01(\t\"\x19\n\x08response\x12\r\n\x05value\x18\x01 \x01(\t2\xf0\x01\n\x04sdcs\x12\"\n\tsearch_kv\x12\x08.request\x1a\t.response\"\x00\x12(\n\x0fsearch_kv_local\x12\x08.request\x1a\t.response\"\x00\x12\"\n\tupdate_kv\x12\x08.request\x1a\t.response\"\x00\x12(\n\x0fupdate_kv_local\x12\x08.request\x1a\t.response\"\x00\x12\"\n\tdelete_kv\x12\x08.request\x1a\t.response\"\x00\x12(\n\x0f\x64\x65lete_kv_local\x12\x08.request\x1a\t.response\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -24,6 +24,6 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_REQUEST']._serialized_end=36
   _globals['_RESPONSE']._serialized_start=38
   _globals['_RESPONSE']._serialized_end=63
-  _globals['_SDCS']._serialized_start=65
-  _globals['_SDCS']._serialized_end=107
+  _globals['_SDCS']._serialized_start=66
+  _globals['_SDCS']._serialized_end=306
 # @@protoc_insertion_point(module_scope)
