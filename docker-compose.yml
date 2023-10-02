@@ -11,7 +11,7 @@ services:
     networks:
       server:
           ipv4_address: 172.24.0.2
-    command: ["python3", "cache_server_1.py"]
+    command: ["python3", "cache_server.py", "9527", "172.24.0.2:50051", "172.24.0.3:50052", "172.24.0.4:50053"]
 
   cache_server2:
     build: .
@@ -24,7 +24,7 @@ services:
     networks:
       server:
           ipv4_address: 172.24.0.3
-    command: ["python3", "cache_server_2.py"]
+    command: ["python3", "cache_server.py", "9528", "172.24.0.3:50052", "172.24.0.2:50051", "172.24.0.4:50053"]
  
   cache_server3:
     build: .
@@ -37,7 +37,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    command: ["python3", "cache_server_3.py"]
+    command: ["python3", "cache_server.py", "9529", "172.24.0.4:50053", "172.24.0.2:50051", "172.24.0.3:50052"]
 
 networks:
   server:
