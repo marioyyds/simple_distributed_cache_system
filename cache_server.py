@@ -105,6 +105,8 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
         key = request.key
         if key in dict_buffer.keys():
             del dict_buffer[key]
+        print("successfully del %s" % (key))
+        print(dict_buffer)
         #     return 1
         # else:
         #     return 0
@@ -124,41 +126,32 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
 
 class HttpHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        # print(self.path.strip("/"))
         key = self.path.strip("/")
         my_cache_server = Cache_Server()
-        # print("request key: %s" % key)
-        # with grpc.insecure_channel(gRPC_local_ip) as channel:
-        #             stub = SDCS_pb2_grpc.sdcsStub(channel)
-        #             response = stub.search_kv(SDCS_pb2.request(key=key))
-        response = my_cache_server.search_kv(SDCS_pb2.request(key = key),None)
-        # print(response)
 
-        # print(str(response.value))
+        response = my_cache_server.search_kv(SDCS_pb2.request(key = key),None)
+
         if json.loads(response.value)[key] != "not found":
             self.send_response(200)
 
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.end_headers()
             
-            self.wfile.write(str(response.value).encode(encoding='utf-8'))
+            self.wfile.write((str(response.value) + "\n").encode(encoding='utf-8'))
         else:
             self.send_response(404)
 
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.end_headers()
             
-            self.wfile.write("".encode(encoding='utf-8'))
+            self.wfile.write("\n".encode(encoding='utf-8'))
 
     def do_POST(self):
         req_datas = self.rfile.read(int(self.headers['Content-Length']))
-        # print(req_datas)
-        # print(req_datas.decode(encoding="utf-8"))
+        obj = json.loads(req_datas.decode(encoding="utf-8"))
 
         my_cache_server = Cache_Server()
 
-        obj = json.loads(req_datas.decode(encoding="utf-8"))
-        # tup = obj.popitem()
         key = ''
         for k in obj.keys():
             key = k
@@ -166,31 +159,30 @@ class HttpHandler(BaseHTTPRequestHandler):
         value = obj.get(key)
         response = my_cache_server.update_kv(request= SDCS_pb2.request(key = key), context = json.dumps(obj, ensure_ascii = False))
         print(obj)
-        # print(key)
-        # print(value)
-        # print(obj)
+
         self.send_response(200)
 
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.end_headers()
 
-        self.wfile.write(req_datas)
+        self.wfile.write((json.dumps(obj) + "\n").encode("utf-8"))
 
     def do_DELETE(self):
         key = self.path.strip("/")
 
         my_cache_server = Cache_Server()
-        my_cache_server.delete_kv(SDCS_pb2.request(key = key), context= None)
-
-        self.send_response(200)
 
         # 2. 发送响应头
+        self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.end_headers()
 
-        # 3. 发送响应内容（此处流不需要关闭）
-        self.wfile.write("1".encode("utf-8"))
-        pass
+        response = my_cache_server.search_kv(SDCS_pb2.request(key = key),None)
+        if json.loads(response.value)[key] != "not found":
+            my_cache_server.delete_kv(SDCS_pb2.request(key = key), context= None)
+            self.wfile.write("1\n".encode("utf-8"))
+        else:
+            self.wfile.write("0\n".encode("utf-8"))
 
 def run_httpd_server():
     httpd = HTTPServer((httpd_bind_ip, httpd_port), HttpHandler)
