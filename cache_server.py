@@ -97,7 +97,7 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
             try:
                 with grpc.insecure_channel(nearby) as channel:
                     stub = SDCS_pb2_grpc.sdcsStub(channel)
-                    response = stub.delete_kv_local(SDCS_pb2.request(key=key), context = None)
+                    response = stub.delete_kv_local(SDCS_pb2.request(key=key))
             except Exception as e:
                 pass
     
