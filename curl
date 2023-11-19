@@ -1,5 +1,0 @@
-curl -XPOST -H "Content-type:application/json; charset=utf-8;" http:/127.0.0.1:9528 -d '{"tom":"uestc"}'
-
-curl http:/127.0.0.1:9528
-
-curl -XDELETE http://127.0.0.1:9527/tom1
