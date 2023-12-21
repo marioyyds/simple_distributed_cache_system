@@ -4,16 +4,16 @@ import SDCS_pb2_grpc
 from concurrent import futures
 import json
 import threading
-from multiprocessing import Process
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
 import sys
 
+# to store key-value data
 dict_buffer = {}
 
-httpd_port = -1
+httpd_port = 80
 httpd_bind_ip = "0.0.0.0"
 
+gRPC_port = 50000
 gRPC_local_ip = ""
 gRPC_nearby_ip = []
 
@@ -25,22 +25,16 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
     def search_kv(self, request, context):
         response = self.search_kv_local(request=request,context=context)
         key = request.key
-        print("request.key "+request.key)
-        print("response.value "+response.value)
         if json.loads(response.value).get(key) != "not found":
             temp_dict = {}
             temp_dict.setdefault(key,dict_buffer.get(key))
-            print("here1")
             return SDCS_pb2.response(value=json.dumps(temp_dict, ensure_ascii=False))
         else:
-            print("here12")
             return self.__search_neighbor(key)
     
     def search_kv_local(self, request, context):
         key = request.key
         temp_dict = {}
-        print("serach_local_kv")
-        print(dict_buffer)
         if key is not None and key in dict_buffer.keys():
             temp_dict.setdefault(key,dict_buffer.get(key))
             return SDCS_pb2.response(value=json.dumps(temp_dict, ensure_ascii=False))
@@ -52,18 +46,12 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
         temp_dict = {}
 
         for nearby in gRPC_nearby_ip:
-            print("here13" + nearby)
             try:
                 with grpc.insecure_channel(nearby) as channel:
                     stub = SDCS_pb2_grpc.sdcsStub(channel)
                     response = stub.search_kv_local(SDCS_pb2.request(key=key))
-                    print(response)
                 
                 if json.loads(response.value).get(key) != "not found":
-                    # temp_dict.setdefault(key, response.value)
-                    print("search nearby")
-                    # print(temp_dict)
-                    print(response.value)
                     return SDCS_pb2.response(value=response.value)
             except Exception as e:
                 print(e)
@@ -85,9 +73,7 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
     def update_kv_local(self, request, context):
         key = request.key
         obj = json.loads(context)
-        print(obj)
         dict_buffer.setdefault(key, obj.get(key))
-        print(dict_buffer)
 
     def delete_kv(self, request, context):
         key = request.key
@@ -105,11 +91,6 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
         key = request.key
         if key in dict_buffer.keys():
             del dict_buffer[key]
-        print("successfully del %s" % (key))
-        print(dict_buffer)
-        #     return 1
-        # else:
-        #     return 0
 
     def server(self):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -119,12 +100,7 @@ class Cache_Server(SDCS_pb2_grpc.sdcsServicer):
         print("Server started, listening on " + gRPC_local_ip)
         server.wait_for_termination()
 
-    def run(self):
-        thread_server = threading.Thread(target=self.server)
-        thread_server.start()
-        thread_server.join()
-
-class HttpHandler(BaseHTTPRequestHandler):
+class Http_Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         key = self.path.strip("/")
         my_cache_server = Cache_Server()
@@ -155,13 +131,9 @@ class HttpHandler(BaseHTTPRequestHandler):
         key = ''
         for k in obj.keys():
             key = k
-        print(key)
-        value = obj.get(key)
-        response = my_cache_server.update_kv(request= SDCS_pb2.request(key = key), context = json.dumps(obj, ensure_ascii = False))
-        print(obj)
+        my_cache_server.update_kv(request= SDCS_pb2.request(key = key), context = json.dumps(obj, ensure_ascii = False))
 
         self.send_response(200)
-
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.end_headers()
 
@@ -172,9 +144,8 @@ class HttpHandler(BaseHTTPRequestHandler):
 
         my_cache_server = Cache_Server()
 
-        # 2. 发送响应头
         self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Type", "application/json; charset=utf-8")
         self.end_headers()
 
         response = my_cache_server.search_kv(SDCS_pb2.request(key = key),None)
@@ -185,7 +156,7 @@ class HttpHandler(BaseHTTPRequestHandler):
             self.wfile.write("0\n".encode("utf-8"))
 
 def run_httpd_server():
-    httpd = HTTPServer((httpd_bind_ip, httpd_port), HttpHandler)
+    httpd = HTTPServer((httpd_bind_ip, httpd_port), Http_Handler)
     httpd.serve_forever()
 
 def run_gRPC_server():
@@ -193,15 +164,17 @@ def run_gRPC_server():
     my_cache_server.server()
 
 if __name__ == "__main__":
-    httpd_port = int(sys.argv[1])
-    httpd_bind_ip = "0.0.0.0"
-    gRPC_local_ip = sys.argv[2]
-    gRPC_nearby_ip.append(sys.argv[3])
-    gRPC_nearby_ip.append(sys.argv[4])
+    # get my grpc ip
+    gRPC_local_ip = sys.argv[1] + ":" + str(gRPC_port)
+    # get nearby grpc ip
+    for ip in sys.argv[2:]:
+        gRPC_nearby_ip.append(ip + ":" + str(gRPC_port))
 
+    # start gRPC and http server
     thread_gRPC_server = threading.Thread(target=run_gRPC_server)
     thread_httpd_server = threading.Thread(target=run_httpd_server)
 
     thread_httpd_server.start()
     thread_gRPC_server.start()
     thread_gRPC_server.join()
+    thread_httpd_server.start()

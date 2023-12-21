@@ -3,38 +3,38 @@ services:
   cache_server1:
     build: .
     ports:
-      - 9527:9527
+      - 9527:80
     deploy:
       restart_policy:
         condition: on-failure
     networks:
       server:
-          ipv4_address: 172.24.0.2
-    command: ["python3", "cache_server.py", "9527", "172.24.0.2:50000", "172.24.0.3:50000", "172.24.0.4:50000"]
+          ipv4_address: 192.24.0.2
+    command: ["python3", "cache_server.py", "192.24.0.2", "192.24.0.3", "192.24.0.4"]  # pyhton3 cache_server.py {my_ip} {nearby_ip} {nearby_ip} {nearby_ip}
 
   cache_server2:
     build: .
     ports:
-      - 9528:9528
+      - 9528:80
     deploy:
       restart_policy:
         condition: on-failure
     networks:
       server:
-          ipv4_address: 172.24.0.3
-    command: ["python3", "cache_server.py", "9528", "172.24.0.3:50000", "172.24.0.2:50000", "172.24.0.4:50000"]
+          ipv4_address: 192.24.0.3
+    command: ["python3", "cache_server.py", "192.24.0.3", "192.24.0.2", "192.24.0.4"]
  
   cache_server3:
     build: .
     ports:
-      - 9529:9529
+      - 9529:80
     networks:
       server:
-          ipv4_address: 172.24.0.4
+          ipv4_address: 192.24.0.4
     deploy:
       restart_policy:
         condition: on-failure
-    command: ["python3", "cache_server.py", "9529", "172.24.0.4:50000", "172.24.0.2:50000", "172.24.0.3:50000"]
+    command: ["python3", "cache_server.py", "192.24.0.4", "192.24.0.2", "192.24.0.3"]
 
 networks:
   server:
@@ -42,5 +42,5 @@ networks:
       bridge
     ipam:
       config:
-        - subnet: 172.24.0.0/24
-          gateway: 172.24.0.1
+        - subnet: 192.24.0.0/24
+          gateway: 192.24.0.1
